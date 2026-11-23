@@ -1,7 +1,7 @@
                     
                     
 ┌──────────────────┐
-│ 20 Code Findings │
+│ 18 Code Findings │
 └──────────────────┘
                      
     vulnerable/app.py
@@ -12,7 +12,7 @@
           logging  sensitive information.                                                                    
           Details: https://sg.run/ydNx                                                                       
                                                                                                              
-           63┆ log.info("Login attempt user=%s password=%s", username, password)
+          162┆ log.info("Login attempt user=%s password=%s", username, password)
    
     ❯❱ python.lang.security.insecure-hash-algorithms-md5.insecure-hash-algorithm-md5
           ❰❰ Blocking ❱❱
@@ -20,7 +20,7 @@
           therefore not suitable as a cryptographic signature. Use SHA256 or SHA3 instead.               
           Details: https://sg.run/vYrY                                                                   
                                                                                                          
-           65┆ pw_hash = hashlib.md5(password.encode()).hexdigest()
+          164┆ pw_hash = hashlib.md5(password.encode()).hexdigest()
    
     ❯❱ python.lang.security.audit.md5-used-as-password.md5-used-as-password
           ❰❰ Blocking ❱❱
@@ -29,7 +29,7 @@
           such as scrypt. You can use `hashlib.scrypt`.                                                       
           Details: https://sg.run/5DwD                                                                        
                                                                                                               
-           65┆ pw_hash = hashlib.md5(password.encode()).hexdigest()
+          164┆ pw_hash = hashlib.md5(password.encode()).hexdigest()
    
    ❯❯❱ python.flask.security.injection.tainted-sql-string.tainted-sql-string
           ❰❰ Blocking ❱❱
@@ -40,10 +40,10 @@
           mapper (ORM) such as SQLAlchemy which will protect your queries.                                  
           Details: https://sg.run/JxZj                                                                      
                                                                                                             
-           67┆ query = (
-           68┆     "SELECT * FROM users WHERE username = '" + username + "' "
-           69┆     "AND password = '" + pw_hash + "'"
-           70┆ )
+          166┆ query = (
+          167┆     "SELECT * FROM users WHERE username = '" + username + "' "
+          168┆     "AND password = '" + pw_hash + "'"
+          169┆ )
    
     ❯❱ python.django.security.injection.sql.sql-injection-using-db-cursor-execute.sql-injection-db-cursor-execute
           ❰❰ Blocking ❱❱
@@ -53,11 +53,11 @@
           use `Entry.objects.filter(date=2006)`.                                                              
           Details: https://sg.run/qx7y                                                                        
                                                                                                               
-           98┆ q = request.args.get("q", "")
-           99┆ # [V-01] SQL injection (UNION-based) in the search box.
-          100┆ rows = db().execute(
-          101┆     f"SELECT name, stock, price FROM medicines WHERE name LIKE '%{q}%'"
-          102┆ ).fetchall()
+          204┆ q = request.args.get("q", "")
+          205┆ # [V-01] SQL injection (UNION-based) in the search box.
+          206┆ rows = db().execute(
+          207┆     f"SELECT name, stock, price FROM medicines WHERE name LIKE '%{q}%'"
+          208┆ ).fetchall()
    
    ❯❯❱ python.flask.security.injection.tainted-sql-string.tainted-sql-string
           ❰❰ Blocking ❱❱
@@ -68,7 +68,7 @@
           mapper (ORM) such as SQLAlchemy which will protect your queries.                                  
           Details: https://sg.run/JxZj                                                                      
                                                                                                             
-          101┆ f"SELECT name, stock, price FROM medicines WHERE name LIKE '%{q}%'"
+          207┆ f"SELECT name, stock, price FROM medicines WHERE name LIKE '%{q}%'"
    
     ❯❱ python.django.security.injection.raw-html-format.raw-html-format
           ❰❰ Blocking ❱❱
@@ -79,7 +79,7 @@
           (`django.shortcuts.render`) which will safely render HTML instead.                                 
           Details: https://sg.run/oYj1                                                                       
                                                                                                              
-          104┆ f"<li>{r['name']} | stock {r['stock']} | UGX {r['price']}</li>" for r in rows
+          210┆ f"<tr><td><b>{r['name']}</b></td><td>{stock_badge(r['stock'])}</td>"
    
     ❯❱ python.flask.security.injection.raw-html-concat.raw-html-format
           ❰❰ Blocking ❱❱
@@ -90,7 +90,7 @@
           (`flask.render_template`) which will safely render HTML instead.                                   
           Details: https://sg.run/Pb7e                                                                       
                                                                                                              
-          104┆ f"<li>{r['name']} | stock {r['stock']} | UGX {r['price']}</li>" for r in rows
+          210┆ f"<tr><td><b>{r['name']}</b></td><td>{stock_badge(r['stock'])}</td>"
    
     ❯❱ python.django.security.injection.raw-html-format.raw-html-format
           ❰❰ Blocking ❱❱
@@ -101,11 +101,7 @@
           (`django.shortcuts.render`) which will safely render HTML instead.                                 
           Details: https://sg.run/oYj1                                                                       
                                                                                                              
-          108┆ page = (
-          109┆     LAYOUT
-          110┆     + "<h2>Medicines</h2><form><input name=q><button>Search</button></form>"
-          111┆     + f"<p>Results for: {q}</p><ul>{items}</ul>"
-          112┆ )
+          211┆ f"<td class=num>UGX {fmt_price(r['price'])}</td></tr>"
    
     ❯❱ python.flask.security.injection.raw-html-concat.raw-html-format
           ❰❰ Blocking ❱❱
@@ -116,11 +112,39 @@
           (`flask.render_template`) which will safely render HTML instead.                                   
           Details: https://sg.run/Pb7e                                                                       
                                                                                                              
-          108┆ page = (
-          109┆     LAYOUT
-          110┆     + "<h2>Medicines</h2><form><input name=q><button>Search</button></form>"
-          111┆     + f"<p>Results for: {q}</p><ul>{items}</ul>"
-          112┆ )
+          211┆ f"<td class=num>UGX {fmt_price(r['price'])}</td></tr>"
+   
+    ❯❱ python.django.security.injection.raw-html-format.raw-html-format
+          ❰❰ Blocking ❱❱
+          Detected user input flowing into a manually constructed HTML string. You may be accidentally       
+          bypassing secure methods of rendering HTML by manually constructing HTML and this could create a   
+          cross-site scripting vulnerability, which could let attackers steal sensitive user data. To be sure
+          this is safe, check that the HTML is rendered safely. Otherwise, use templates                     
+          (`django.shortcuts.render`) which will safely render HTML instead.                                 
+          Details: https://sg.run/oYj1                                                                       
+                                                                                                             
+          222┆ "<div class=pagehead><h2>Medicines</h2>"
+          223┆ "<p>Live stock levels and prices at our pharmacy.</p></div><div class=card>"
+          224┆ "<form class=searchbar><input name=q placeholder='Search by name'>"
+          225┆ "<button>Search</button></form>"
+          226┆ + (f"<p class=results-for>Results for: {q}</p>" if q else "")
+          227┆ + table + "</div>"
+   
+    ❯❱ python.flask.security.injection.raw-html-concat.raw-html-format
+          ❰❰ Blocking ❱❱
+          Detected user input flowing into a manually constructed HTML string. You may be accidentally       
+          bypassing secure methods of rendering HTML by manually constructing HTML and this could create a   
+          cross-site scripting vulnerability, which could let attackers steal sensitive user data. To be sure
+          this is safe, check that the HTML is rendered safely. Otherwise, use templates                     
+          (`flask.render_template`) which will safely render HTML instead.                                   
+          Details: https://sg.run/Pb7e                                                                       
+                                                                                                             
+          222┆ "<div class=pagehead><h2>Medicines</h2>"
+          223┆ "<p>Live stock levels and prices at our pharmacy.</p></div><div class=card>"
+          224┆ "<form class=searchbar><input name=q placeholder='Search by name'>"
+          225┆ "<button>Search</button></form>"
+          226┆ + (f"<p class=results-for>Results for: {q}</p>" if q else "")
+          227┆ + table + "</div>"
    
    ❯❯❱ python.flask.security.injection.subprocess-injection.subprocess-injection
           ❰❰ Blocking ❱❱
@@ -131,9 +155,9 @@
           system commands. If you must use subprocess, use a dictionary to allowlist a set of commands.       
           Details: https://sg.run/5gW3                                                                        
                                                                                                               
-          174┆ out = subprocess.run(
-          175┆     "ping -c 1 -W 1 " + host, shell=True, capture_output=True, text=True, timeout=10
-          176┆ )
+          311┆ out = subprocess.run(
+          312┆     "ping -c 1 -W 1 " + host, shell=True, capture_output=True, text=True, timeout=10
+          313┆ )
    
    ❯❯❱ python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use
           ❰❰ Blocking ❱❱
@@ -141,7 +165,7 @@
           to perform command injection. You may consider using 'shlex.escape()'.                             
           Details: https://sg.run/NWxp                                                                       
                                                                                                              
-          175┆ "ping -c 1 -W 1 " + host, shell=True, capture_output=True, text=True, timeout=10
+          312┆ "ping -c 1 -W 1 " + host, shell=True, capture_output=True, text=True, timeout=10
    
    ❯❯❱ python.lang.security.audit.subprocess-shell-true.subprocess-shell-true
           ❰❰ Blocking ❱❱
@@ -151,38 +175,7 @@
           Details: https://sg.run/J92w                                                                       
                                                                                                              
            ▶▶┆ Autofix ▶ False
-          175┆ "ping -c 1 -W 1 " + host, shell=True, capture_output=True, text=True, timeout=10
-   
-    ❯❱ python.flask.security.audit.directly-returned-format-string.directly-returned-format-string
-          ❰❰ Blocking ❱❱
-          Detected Flask route directly returning a formatted string. This is subject to cross-site scripting
-          if user input can reach the string. Consider using the template engine instead and rendering pages 
-          with 'render_template()'.                                                                          
-          Details: https://sg.run/Zv6o                                                                       
-                                                                                                             
-          177┆ return "<pre>" + out.stdout + out.stderr + "</pre>"
-   
-    ❯❱ python.django.security.injection.raw-html-format.raw-html-format
-          ❰❰ Blocking ❱❱
-          Detected user input flowing into a manually constructed HTML string. You may be accidentally       
-          bypassing secure methods of rendering HTML by manually constructing HTML and this could create a   
-          cross-site scripting vulnerability, which could let attackers steal sensitive user data. To be sure
-          this is safe, check that the HTML is rendered safely. Otherwise, use templates                     
-          (`django.shortcuts.render`) which will safely render HTML instead.                                 
-          Details: https://sg.run/oYj1                                                                       
-                                                                                                             
-          177┆ return "<pre>" + out.stdout + out.stderr + "</pre>"
-   
-    ❯❱ python.flask.security.injection.raw-html-concat.raw-html-format
-          ❰❰ Blocking ❱❱
-          Detected user input flowing into a manually constructed HTML string. You may be accidentally       
-          bypassing secure methods of rendering HTML by manually constructing HTML and this could create a   
-          cross-site scripting vulnerability, which could let attackers steal sensitive user data. To be sure
-          this is safe, check that the HTML is rendered safely. Otherwise, use templates                     
-          (`flask.render_template`) which will safely render HTML instead.                                   
-          Details: https://sg.run/Pb7e                                                                       
-                                                                                                             
-          177┆ return "<pre>" + out.stdout + out.stderr + "</pre>"
+          312┆ "ping -c 1 -W 1 " + host, shell=True, capture_output=True, text=True, timeout=10
    
    ❯❯❱ python.django.security.audit.avoid-insecure-deserialization.avoid-insecure-deserialization
           ❰❰ Blocking ❱❱
@@ -190,16 +183,7 @@
           `shelve`, or `yaml`, which are known to lead to remote code execution vulnerabilities.         
           Details: https://sg.run/9oyr                                                                   
                                                                                                          
-          184┆ records = pickle.loads(request.files["backup"].read())
-   
-    ❯❱ python.flask.security.audit.directly-returned-format-string.directly-returned-format-string
-          ❰❰ Blocking ❱❱
-          Detected Flask route directly returning a formatted string. This is subject to cross-site scripting
-          if user input can reach the string. Consider using the template engine instead and rendering pages 
-          with 'render_template()'.                                                                          
-          Details: https://sg.run/Zv6o                                                                       
-                                                                                                             
-          191┆ return f"Imported {len(records)} medicines"
+          329┆ records = pickle.loads(request.files["backup"].read())
    
     ❯❱ python.lang.security.insecure-hash-algorithms-md5.insecure-hash-algorithm-md5
           ❰❰ Blocking ❱❱
@@ -207,7 +191,7 @@
           therefore not suitable as a cryptographic signature. Use SHA256 or SHA3 instead.               
           Details: https://sg.run/vYrY                                                                   
                                                                                                          
-          210┆ md5 = lambda s: hashlib.md5(s.encode()).hexdigest()  # noqa: E731
+          362┆ md5 = lambda s: hashlib.md5(s.encode()).hexdigest()  # noqa: E731
    
     ❯❱ python.flask.security.audit.debug-enabled.debug-enabled
           ❰❰ Blocking ❱❱
@@ -216,4 +200,5 @@
           using system environment variables.                                                                 
           Details: https://sg.run/dKrd                                                                        
                                                                                                               
-          235┆ create_app().run(host="0.0.0.0", port=5000, debug=True)
+          387┆ create_app().run(host="0.0.0.0", port=5000, debug=True)
+

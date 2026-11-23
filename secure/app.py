@@ -29,6 +29,7 @@ from flask import (
     session,
     url_for,
 )
+from werkzeug.exceptions import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -157,9 +158,21 @@ def create_app(config=None):
 
     # ---- routes -----------------------------------------------------------------
 
+    @app.errorhandler(HTTPException)
+    def http_error(exc):
+        # Styled error page. Only Werkzeug's fixed text is shown, never internals.
+        return render_template(
+            "error.html", code=exc.code, name=exc.name, description=exc.description
+        ), exc.code
+
     @app.route("/")
     def index():
-        return render_template("index.html")
+        prescriptions = []
+        if g.user is not None:
+            prescriptions = db().execute(
+                "SELECT id, drug, dosage FROM prescriptions WHERE user_id = ?", (g.user["id"],)
+            ).fetchall()
+        return render_template("index.html", prescriptions=prescriptions)
 
     @app.route("/login", methods=["GET", "POST"])
     def login():

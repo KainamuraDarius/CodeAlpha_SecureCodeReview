@@ -19,12 +19,105 @@ REPORTS_DIR = os.path.join(BASE_DIR, "reports")
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("meditrack")
 
-LAYOUT = """<!doctype html><title>MediTrack</title>
-<nav><a href="/">Home</a> | <a href="/search">Medicines</a> |
-{% if session.user %}<a href="/messages">Contact pharmacist</a> |
-<a href="/logout">Logout ({{ session.user }})</a>
-{% else %}<a href="/login">Login</a>{% endif %}</nav>
-<hr>"""
+LAYOUT = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MediTrack</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css"></head>
+<body class="build-vulnerable">
+<div class="build">⚠ VULNERABLE BUILD · deliberately insecure, for security training only</div>
+<header class="topbar"><div class="wrap">
+<a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32"
+rx="8" fill="#0f766e"/><path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff"/></svg>MediTrack</a>
+<nav class="nav"><a href="/">Home</a><a href="/search">Medicines</a>
+{% if session.user %}<a href="/messages">Contact pharmacist</a>
+{% if session.role == 'admin' %}<a href="/admin/messages">Inbox</a>{% endif %}{% endif %}</nav>
+<div class="user">{% if session.user %}<span class="chip">● {{ session.user }}
+{% if session.role == 'admin' %} · staff{% endif %}</span>
+<a class="linkbtn" href="/logout">Log out</a>
+{% else %}<a class="btn" href="/login">Log in</a>{% endif %}</div>
+</div></header>
+<main><div class="wrap">
+"""
+
+FOOTER = """
+</div></main>
+<footer><div class="wrap"><span>MediTrack pharmacy portal · CodeAlpha secure code review</span>
+<span>Vulnerable build</span></div></footer>
+</body></html>"""
+
+
+def page(content):
+    return LAYOUT + content + FOOTER
+
+
+def fmt_price(v):
+    # UNION-injected rows put text in this column, so only format real numbers.
+    return f"{v:,}" if isinstance(v, int) else v
+
+
+def stock_badge(v):
+    low = " low" if isinstance(v, int) and v < 30 else ""
+    return f'<span class="badge{low}">{v} in stock</span>'
+
+
+HOME = """
+<section class="hero">
+  <h1>Your pharmacy, one click away.</h1>
+  <p>Check medicine availability, view your prescriptions and message the pharmacist,
+  all in one place.</p>
+  <form class="searchbar" action="/search">
+    <input name="q" placeholder="Search medicines, e.g. Paracetamol" aria-label="Search medicines">
+    <button class="btn light">Search</button>
+  </form>
+  <div class="stats">
+    <div><b>24/7</b><span>Online access</span></div>
+    <div><b>100%</b><span>Licensed pharmacists</span></div>
+    <div><b>UGX</b><span>Local pricing</span></div>
+  </div>
+</section>
+{% if session.user %}
+<div class="grid">
+  <div class="card"><div class="icon">℞</div><h3>Your prescriptions</h3>
+    {% if prescriptions %}<div class="rows">{% for p in prescriptions %}
+      <a class="row" href="/prescriptions/{{ p.id }}"><span><b>{{ p.drug }}</b><br>
+      <small>{{ p.dosage }}</small></span><small>#{{ p.id }} →</small></a>{% endfor %}</div>
+    {% else %}<p class="muted">You have no prescriptions on file.</p>{% endif %}
+  </div>
+  <div class="card"><div class="icon">✉</div><h3>Ask the pharmacist</h3>
+    <p class="muted">Questions about dosage or side effects? Send a private message.</p>
+    <a class="btn" href="/messages">Write a message</a></div>
+  <div class="card"><div class="icon">⇩</div><h3>Reports</h3>
+    <p class="muted">Monthly stock report for October 2026.</p>
+    <a class="btn" href="/reports/download?file=stock-2026-10.txt">Download report</a></div>
+</div>
+{% if session.role == 'admin' %}
+<div class="card"><h2>Admin tools</h2><p class="muted">Pharmacy staff only.</p>
+  <div class="grid">
+    <div><h3>Patient inbox</h3><p class="muted">Read messages sent by patients.</p>
+      <a class="btn" href="/admin/messages">Open inbox</a></div>
+    <form action="/admin/ping"><h3>Network check</h3>
+      <div class="field"><label for="host">Host to ping</label>
+      <input id="host" name="host" value="127.0.0.1"></div><button>Ping</button></form>
+    <form method="post" action="/admin/import" enctype="multipart/form-data">
+      <h3>Import stock</h3><label for="backup">Backup file</label>
+      <input id="backup" type="file" name="backup" required><button>Import</button></form>
+  </div>
+</div>
+{% endif %}
+{% else %}
+<div class="grid">
+  <div class="card"><div class="icon">⌕</div><h3>Find medicines</h3>
+    <p class="muted">See what's in stock and what it costs before you visit.</p></div>
+  <div class="card"><div class="icon">℞</div><h3>Prescriptions</h3>
+    <p class="muted">Your dosage and pharmacist notes, whenever you need them.</p></div>
+  <div class="card"><div class="icon">✉</div><h3>Talk to us</h3>
+    <p class="muted">Message a licensed pharmacist directly.</p>
+    <a class="btn" href="/login">Log in to start</a></div>
+</div>
+{% endif %}
+"""
 
 
 def create_app(db_path=None):
@@ -50,7 +143,13 @@ def create_app(db_path=None):
 
     @app.route("/")
     def index():
-        return render_template_string(LAYOUT + "<h1>Welcome to MediTrack</h1>")
+        prescriptions = []
+        if "user_id" in session:
+            prescriptions = db().execute(
+                "SELECT id, drug, dosage FROM prescriptions WHERE user_id = ?",
+                (session["user_id"],),
+            ).fetchall()
+        return render_template_string(page(HOME), prescriptions=prescriptions)
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
@@ -81,10 +180,17 @@ def create_app(db_path=None):
             ).fetchone()
             error = "Wrong password" if exists else "No such user"
         return render_template_string(
-            LAYOUT
-            + """<h2>Login</h2><p style="color:red">{{ error }}</p>
-            <form method="post"><input name="username"> <input name="password" type="password">
-            <button>Login</button></form>""",
+            page(
+                """<div class="card narrow"><h2>Welcome back</h2>
+            <p class="muted">Log in to view your prescriptions.</p>
+            {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+            <form method="post" class="stack">
+            <div class="field"><label for="username">Username</label>
+            <input id="username" name="username" autofocus></div>
+            <div class="field"><label for="password">Password</label>
+            <input id="password" name="password" type="password"></div>
+            <button>Log in</button></form></div>"""
+            ),
             error=error,
         )
 
@@ -101,16 +207,26 @@ def create_app(db_path=None):
             f"SELECT name, stock, price FROM medicines WHERE name LIKE '%{q}%'"
         ).fetchall()
         items = "".join(
-            f"<li>{r['name']} | stock {r['stock']} | UGX {r['price']}</li>" for r in rows
+            f"<tr><td><b>{r['name']}</b></td><td>{stock_badge(r['stock'])}</td>"
+            f"<td class=num>UGX {fmt_price(r['price'])}</td></tr>"
+            for r in rows
+        )
+        table = (
+            "<table class=table><thead><tr><th>Medicine</th><th>Availability</th>"
+            f"<th class=num>Price</th></tr></thead><tbody>{items}</tbody></table>"
+            if rows else "<p class=empty>No medicines match your search.</p>"
         )
         # [V-02] Server-side template injection + [V-06] reflected XSS:
         # the search term is pasted into the template source itself.
-        page = (
-            LAYOUT
-            + "<h2>Medicines</h2><form><input name=q><button>Search</button></form>"
-            + f"<p>Results for: {q}</p><ul>{items}</ul>"
+        html = page(
+            "<div class=pagehead><h2>Medicines</h2>"
+            "<p>Live stock levels and prices at our pharmacy.</p></div><div class=card>"
+            "<form class=searchbar><input name=q placeholder='Search by name'>"
+            "<button>Search</button></form>"
+            + (f"<p class=results-for>Results for: {q}</p>" if q else "")
+            + table + "</div>"
         )
-        return render_template_string(page)
+        return render_template_string(html)
 
     @app.route("/prescriptions/<int:pid>")
     def prescription(pid):
@@ -121,8 +237,14 @@ def create_app(db_path=None):
         if row is None:
             return "Not found", 404
         return render_template_string(
-            LAYOUT + "<h2>Prescription #{{ p.id }}</h2><p>{{ p.drug }}: {{ p.dosage }}</p>"
-            "<p>Patient notes: {{ p.notes }}</p>",
+            page(
+                """<div class="pagehead"><a href="/">← Back to dashboard</a></div>
+            <div class="card"><span class="badge">Active</span>
+            <h2>Prescription #{{ p.id }}</h2><dl class="rx">
+            <dt>Medicine</dt><dd><b>{{ p.drug }}</b></dd>
+            <dt>Dosage</dt><dd>{{ p.dosage }}</dd>
+            <dt>Patient notes</dt><dd>{{ p.notes }}</dd></dl></div>"""
+            ),
             p=row,
         )
 
@@ -131,15 +253,24 @@ def create_app(db_path=None):
         if "user_id" not in session:
             return redirect("/login")
         # [V-11] No CSRF token on this state-changing form.
-        if request.method == "POST":
+        sent = request.method == "POST"
+        if sent:
             db().execute(
                 "INSERT INTO messages (user_id, body) VALUES (?, ?)",
                 (session["user_id"], request.form.get("body", "")),
             )
             db().commit()
         return render_template_string(
-            LAYOUT + """<h2>Message the pharmacist</h2>
-            <form method="post"><textarea name="body"></textarea><button>Send</button></form>"""
+            page(
+                """<div class="card narrow"><h2>Message the pharmacist</h2>
+            <p class="muted">A licensed pharmacist will reply within one working day.</p>
+            {% if sent %}<div class="alert alert-success">Message sent.
+            We'll get back to you soon.</div>{% endif %}
+            <form method="post" class="stack"><div class="field">
+            <label for="body">Your message</label><textarea id="body" name="body"></textarea>
+            </div><button>Send message</button></form></div>"""
+            ),
+            sent=sent,
         )
 
     @app.route("/admin/messages")
@@ -152,8 +283,14 @@ def create_app(db_path=None):
         ).fetchall()
         # [V-06] Stored XSS: patient messages rendered with |safe in the admin's browser.
         return render_template_string(
-            LAYOUT + "<h2>Inbox</h2>{% for m in rows %}<div><b>{{ m.username }}</b>: "
-            "{{ m.body|safe }}</div>{% endfor %}",
+            page(
+                """<div class="pagehead"><h2>Patient inbox</h2>
+            <p>{{ rows|length }} message{{ '' if rows|length == 1 else 's' }}</p></div>
+            <div class="card">{% for m in rows %}<div class="msg">
+            <div class="avatar">{{ m.username[:1] }}</div>
+            <div><b>{{ m.username }}</b><br>{{ m.body|safe }}</div></div>
+            {% else %}<p class="empty">No messages yet.</p>{% endfor %}</div>"""
+            ),
             rows=rows,
         )
 
@@ -174,7 +311,15 @@ def create_app(db_path=None):
         out = subprocess.run(
             "ping -c 1 -W 1 " + host, shell=True, capture_output=True, text=True, timeout=10
         )
-        return "<pre>" + out.stdout + out.stderr + "</pre>"
+        return render_template_string(
+            page(
+                """<div class="pagehead"><h2>Network check</h2>
+            <p>Result of pinging <b>{{ host }}</b></p></div>
+            <div class="card"><pre class="terminal">{{ result }}</pre></div>"""
+            ),
+            host=host,
+            result=out.stdout + out.stderr,
+        )
 
     @app.route("/admin/import", methods=["POST"])
     def admin_import():
@@ -188,7 +333,14 @@ def create_app(db_path=None):
                 (r["name"], r["stock"], r["price"]),
             )
         db().commit()
-        return f"Imported {len(records)} medicines"
+        return render_template_string(
+            page(
+                """<div class="card narrow"><div class="alert alert-success">
+            Imported {{ count }} medicines.</div>
+            <a class="btn" href="/search">View medicines</a></div>"""
+            ),
+            count=len(records),
+        )
 
     return app
 

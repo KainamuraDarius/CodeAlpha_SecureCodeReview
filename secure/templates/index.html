@@ -1,2 +1,87 @@
 {% extends "base.html" %}
-{% block content %}<h1>Welcome to MediTrack</h1>{% endblock %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Your pharmacy, one click away.</h1>
+  <p>Check medicine availability, view your prescriptions and message the pharmacist, all in one place.</p>
+  <form class="searchbar" action="{{ url_for('search') }}">
+    <input name="q" placeholder="Search medicines, e.g. Paracetamol" aria-label="Search medicines">
+    <button class="btn light">Search</button>
+  </form>
+  <div class="stats">
+    <div><b>24/7</b><span>Online access</span></div>
+    <div><b>100%</b><span>Licensed pharmacists</span></div>
+    <div><b>UGX</b><span>Local pricing</span></div>
+  </div>
+</section>
+
+{% if g.user %}
+<div class="grid">
+  <div class="card">
+    <div class="icon">℞</div>
+    <h3>Your prescriptions</h3>
+    {% if prescriptions %}
+      <div class="rows">
+      {% for p in prescriptions %}
+        <a class="row" href="{{ url_for('prescription', pid=p.id) }}">
+          <span><b>{{ p.drug }}</b><br><small>{{ p.dosage }}</small></span>
+          <small>#{{ p.id }} →</small>
+        </a>
+      {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">You have no prescriptions on file.</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="icon">✉</div>
+    <h3>Ask the pharmacist</h3>
+    <p class="muted">Questions about dosage or side effects? Send a private message.</p>
+    <a class="btn" href="{{ url_for('messages') }}">Write a message</a>
+  </div>
+  <div class="card">
+    <div class="icon">⇩</div>
+    <h3>Reports</h3>
+    <p class="muted">Monthly stock report for October 2026.</p>
+    <a class="btn" href="{{ url_for('download_report', file='stock-2026-10.txt') }}">Download report</a>
+  </div>
+</div>
+
+{% if g.user.role == 'admin' %}
+<div class="card">
+  <h2>Admin tools</h2>
+  <p class="muted">Pharmacy staff only.</p>
+  <div class="grid">
+    <div>
+      <h3>Patient inbox</h3>
+      <p class="muted">Read messages sent by patients.</p>
+      <a class="btn" href="{{ url_for('admin_messages') }}">Open inbox</a>
+    </div>
+    <form action="{{ url_for('admin_ping') }}">
+      <h3>Network check</h3>
+      <div class="field"><label for="host">Host to ping</label>
+        <input id="host" name="host" value="127.0.0.1"></div>
+      <button>Ping</button>
+    </form>
+    <form method="post" action="{{ url_for('admin_import') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <h3>Import stock</h3>
+      <label for="backup">Backup file (JSON)</label>
+      <input id="backup" type="file" name="backup" accept=".json,application/json" required>
+      <button>Import</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% else %}
+<div class="grid">
+  <div class="card"><div class="icon">⌕</div><h3>Find medicines</h3>
+    <p class="muted">See what's in stock and what it costs before you visit.</p></div>
+  <div class="card"><div class="icon">℞</div><h3>Prescriptions</h3>
+    <p class="muted">Your dosage and pharmacist notes, whenever you need them.</p></div>
+  <div class="card"><div class="icon">✉</div><h3>Talk to us</h3>
+    <p class="muted">Message a licensed pharmacist directly.</p>
+    <a class="btn" href="{{ url_for('login') }}">Log in to start</a></div>
+</div>
+{% endif %}
+{% endblock %}

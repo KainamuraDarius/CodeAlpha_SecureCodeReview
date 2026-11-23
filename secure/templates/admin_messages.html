@@ -1,5 +1,18 @@
 {% extends "base.html" %}
+{% block title %}Inbox{% endblock %}
 {% block content %}
-<h2>Inbox</h2>
-{% for m in rows %}<div><b>{{ m.username }}</b>: {{ m.body }}</div>{% endfor %}
+<div class="pagehead">
+  <h2>Patient inbox</h2>
+  <p>{{ rows|length }} message{{ '' if rows|length == 1 else 's' }}</p>
+</div>
+<div class="card">
+  {% for m in rows %}
+  <div class="msg">
+    <div class="avatar">{{ m.username[:1] }}</div>
+    <div><b>{{ m.username }}</b><br>{{ m.body }}</div>
+  </div>
+  {% else %}
+  <p class="empty">No messages yet.</p>
+  {% endfor %}
+</div>
 {% endblock %}

@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-11-23T13:18:25Z",
+  "generated_at": "2026-11-23T18:37:11Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 6,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 3,
       "SEVERITY.MEDIUM": 4,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 190,
+      "loc": 332,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -37,7 +37,7 @@
       "SEVERITY.LOW": 3,
       "SEVERITY.MEDIUM": 4,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 190,
+      "loc": 332,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -84,7 +84,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "32     # [V-05] Hard-coded secret key: anyone with the source can forge session cookies.\n33     app.config[\"SECRET_KEY\"] = \"meditrack-dev-key\"\n34     app.config[\"DATABASE\"] = db_path or os.path.join(BASE_DIR, \"meditrack.db\")\n",
+      "code": "125     # [V-05] Hard-coded secret key: anyone with the source can forge session cookies.\n126     app.config[\"SECRET_KEY\"] = \"meditrack-dev-key\"\n127     app.config[\"DATABASE\"] = db_path or os.path.join(BASE_DIR, \"meditrack.db\")\n",
       "col_offset": 15,
       "end_col_offset": 27,
       "filename": "vulnerable/app.py",
@@ -95,16 +95,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: 'meditrack-dev-key'",
-      "line_number": 33,
+      "line_number": 126,
       "line_range": [
-        33
+        126
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "64             # [V-09] Unsalted MD5 password hash.\n65             pw_hash = hashlib.md5(password.encode()).hexdigest()\n66             # [V-01] SQL injection: user input concatenated into the query.\n",
+      "code": "163             # [V-09] Unsalted MD5 password hash.\n164             pw_hash = hashlib.md5(password.encode()).hexdigest()\n165             # [V-01] SQL injection: user input concatenated into the query.\n",
       "col_offset": 22,
       "end_col_offset": 52,
       "filename": "vulnerable/app.py",
@@ -115,16 +115,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak MD5 hash for security. Consider usedforsecurity=False",
-      "line_number": 65,
+      "line_number": 164,
       "line_range": [
-        65
+        164
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "67             query = (\n68                 \"SELECT * FROM users WHERE username = '\" + username + \"' \"\n69                 \"AND password = '\" + pw_hash + \"'\"\n",
+      "code": "166             query = (\n167                 \"SELECT * FROM users WHERE username = '\" + username + \"' \"\n168                 \"AND password = '\" + pw_hash + \"'\"\n",
       "col_offset": 16,
       "end_col_offset": 56,
       "filename": "vulnerable/app.py",
@@ -135,16 +135,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Possible SQL injection vector through string-based query construction.",
-      "line_number": 68,
+      "line_number": 167,
       "line_range": [
-        68
+        167
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
       "test_id": "B608",
       "test_name": "hardcoded_sql_expressions"
     },
     {
-      "code": "100         rows = db().execute(\n101             f\"SELECT name, stock, price FROM medicines WHERE name LIKE '%{q}%'\"\n102         ).fetchall()\n",
+      "code": "206         rows = db().execute(\n207             f\"SELECT name, stock, price FROM medicines WHERE name LIKE '%{q}%'\"\n208         ).fetchall()\n",
       "col_offset": 14,
       "end_col_offset": 73,
       "filename": "vulnerable/app.py",
@@ -155,16 +155,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Possible SQL injection vector through string-based query construction.",
-      "line_number": 101,
+      "line_number": 207,
       "line_range": [
-        101
+        207
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
       "test_id": "B608",
       "test_name": "hardcoded_sql_expressions"
     },
     {
-      "code": "174         out = subprocess.run(\n175             \"ping -c 1 -W 1 \" + host, shell=True, capture_output=True, text=True, timeout=10\n176         )\n177         return \"<pre>\" + out.stdout + out.stderr + \"</pre>\"\n178 \n",
+      "code": "311         out = subprocess.run(\n312             \"ping -c 1 -W 1 \" + host, shell=True, capture_output=True, text=True, timeout=10\n313         )\n314         return render_template_string(\n315             page(\n",
       "col_offset": 14,
       "end_col_offset": 9,
       "filename": "vulnerable/app.py",
@@ -175,18 +175,18 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "subprocess call with shell=True identified, security issue.",
-      "line_number": 175,
+      "line_number": 312,
       "line_range": [
-        174,
-        175,
-        176
+        311,
+        312,
+        313
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b602_subprocess_popen_with_shell_equals_true.html",
       "test_id": "B602",
       "test_name": "subprocess_popen_with_shell_equals_true"
     },
     {
-      "code": "183         # [V-04] Insecure deserialisation: pickle executes code embedded in the upload.\n184         records = pickle.loads(request.files[\"backup\"].read())\n185         for r in records:\n",
+      "code": "328         # [V-04] Insecure deserialisation: pickle executes code embedded in the upload.\n329         records = pickle.loads(request.files[\"backup\"].read())\n330         for r in records:\n",
       "col_offset": 18,
       "end_col_offset": 62,
       "filename": "vulnerable/app.py",
@@ -197,16 +197,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.",
-      "line_number": 184,
+      "line_number": 329,
       "line_range": [
-        184
+        329
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b301-pickle",
       "test_id": "B301",
       "test_name": "blacklist"
     },
     {
-      "code": "209     if conn.execute(\"SELECT COUNT(*) FROM users\").fetchone()[0] == 0:\n210         md5 = lambda s: hashlib.md5(s.encode()).hexdigest()  # noqa: E731\n211         conn.executemany(\n",
+      "code": "361     if conn.execute(\"SELECT COUNT(*) FROM users\").fetchone()[0] == 0:\n362         md5 = lambda s: hashlib.md5(s.encode()).hexdigest()  # noqa: E731\n363         conn.executemany(\n",
       "col_offset": 24,
       "end_col_offset": 47,
       "filename": "vulnerable/app.py",
@@ -217,16 +217,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "Use of weak MD5 hash for security. Consider usedforsecurity=False",
-      "line_number": 210,
+      "line_number": 362,
       "line_range": [
-        210
+        362
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b324_hashlib.html",
       "test_id": "B324",
       "test_name": "hashlib"
     },
     {
-      "code": "234     # [V-05] Debug mode exposes the Werkzeug console (remote code execution) and stack traces.\n235     create_app().run(host=\"0.0.0.0\", port=5000, debug=True)\n",
+      "code": "386     # [V-05] Debug mode exposes the Werkzeug console (remote code execution) and stack traces.\n387     create_app().run(host=\"0.0.0.0\", port=5000, debug=True)\n",
       "col_offset": 4,
       "end_col_offset": 59,
       "filename": "vulnerable/app.py",
@@ -237,16 +237,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.",
-      "line_number": 235,
+      "line_number": 387,
       "line_range": [
-        235
+        387
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b201_flask_debug_true.html",
       "test_id": "B201",
       "test_name": "flask_debug_true"
     },
     {
-      "code": "234     # [V-05] Debug mode exposes the Werkzeug console (remote code execution) and stack traces.\n235     create_app().run(host=\"0.0.0.0\", port=5000, debug=True)\n",
+      "code": "386     # [V-05] Debug mode exposes the Werkzeug console (remote code execution) and stack traces.\n387     create_app().run(host=\"0.0.0.0\", port=5000, debug=True)\n",
       "col_offset": 26,
       "end_col_offset": 35,
       "filename": "vulnerable/app.py",
@@ -257,9 +257,9 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Possible binding to all interfaces.",
-      "line_number": 235,
+      "line_number": 387,
       "line_range": [
-        235
+        387
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b104_hardcoded_bind_all_interfaces.html",
       "test_id": "B104",

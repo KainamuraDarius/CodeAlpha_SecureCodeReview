@@ -348,7 +348,7 @@ the response time does not reveal the difference either.
 |-------|-----------|--------|
 | Exploit tests (`pytest`) | 21 of 21 attacks succeed | **0 of 21 attacks succeed**; the 5 normal-use and validation tests pass |
 | Bandit | 11 issues (4 High, 4 Medium, 3 Low) | 2 Low, reviewed and accepted (below) |
-| Semgrep | 20 findings (6 Error, 14 Warning) | 2, false positive (below) |
+| Semgrep | 18 findings (6 Error, 12 Warning) | 2, false positive (below) |
 | pip-audit | 18 advisories in 3 packages | **0** |
 
 **Remaining tool output, triaged:**
@@ -356,7 +356,7 @@ the response time does not reveal the difference either.
 - **Bandit B404 and B603** (subprocess imported and called): `ping` runs with
   an argument list, no shell, an absolute path and an allow-listed host. Bandit
   reports every subprocess call, so a warning here is expected.
-- **Semgrep `subprocess-injection`** (lines 265–266): Semgrep sees request data
+- **Semgrep `subprocess-injection`** (lines 278–279): Semgrep sees request data
   reaching `subprocess`, but it does not recognise `_valid_host()` as a
   sanitiser. The tests show that `;`, `|`, `` ` ``, `$()`, spaces and leading
   `-` are all rejected with `400`. This is a false positive.

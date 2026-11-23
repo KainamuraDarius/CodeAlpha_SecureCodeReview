@@ -37,7 +37,7 @@ proves each vulnerability exists in one and is gone from the other.
 |------|---------------|-----------|
 | Exploit tests | 21 of 21 attacks succeed | 0 of 21 succeed |
 | Bandit | 11 issues | 2 Low (reviewed, accepted) |
-| Semgrep | 20 findings | 2 (false positive, explained in the report) |
+| Semgrep | 18 findings | 2 (false positive, explained in the report) |
 | pip-audit | 18 advisories | 0 |
 
 ## Method

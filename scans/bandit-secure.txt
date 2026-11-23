@@ -1,4 +1,4 @@
-Run started:2026-11-23 13:18:35.564173+00:00
+Run started:2026-11-23 18:37:11.961142+00:00
 
 Test results:
 >> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
@@ -15,18 +15,18 @@ Test results:
    Severity: Low   Confidence: High
    CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
    More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html
-   Location: secure/app.py:265:18
-264	        try:
-265	            out = subprocess.run(
-266	                [PING, "-c", "1", "-W", "1", "--", host],
-267	                capture_output=True, text=True, timeout=10, check=False,
-268	            )
-269	            result = out.stdout + out.stderr
+   Location: secure/app.py:278:18
+277	        try:
+278	            out = subprocess.run(
+279	                [PING, "-c", "1", "-W", "1", "--", host],
+280	                capture_output=True, text=True, timeout=10, check=False,
+281	            )
+282	            result = out.stdout + out.stderr
 
 --------------------------------------------------
 
 Code scanned:
-	Total lines of code: 308
+	Total lines of code: 319
 	Total lines skipped (#nosec): 0
 	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
 

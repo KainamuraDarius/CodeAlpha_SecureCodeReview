@@ -14,10 +14,10 @@
           system commands. If you must use subprocess, use a dictionary to allowlist a set of commands.       
           Details: https://sg.run/5gW3                                                                        
                                                                                                               
-          265┆ out = subprocess.run(
-          266┆     [PING, "-c", "1", "-W", "1", "--", host],
-          267┆     capture_output=True, text=True, timeout=10, check=False,
-          268┆ )
+          278┆ out = subprocess.run(
+          279┆     [PING, "-c", "1", "-W", "1", "--", host],
+          280┆     capture_output=True, text=True, timeout=10, check=False,
+          281┆ )
    
    ❯❯❱ python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use
           ❰❰ Blocking ❱❱
@@ -25,4 +25,5 @@
           to perform command injection. You may consider using 'shlex.escape()'.                             
           Details: https://sg.run/NWxp                                                                       
                                                                                                              
-          266┆ [PING, "-c", "1", "-W", "1", "--", host],
+          279┆ [PING, "-c", "1", "-W", "1", "--", host],
+

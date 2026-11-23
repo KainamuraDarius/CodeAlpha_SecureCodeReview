@@ -1,9 +1,31 @@
 {% extends "base.html" %}
+{% block title %}Medicines{% endblock %}
 {% block content %}
-<h2>Medicines</h2>
-<form><input name="q" value="{{ q }}"><button>Search</button></form>
-<p>Results for: {{ q }}</p>
-<ul>
-{% for r in rows %}<li>{{ r.name }} | stock {{ r.stock }} | UGX {{ r.price }}</li>{% endfor %}
-</ul>
+<div class="pagehead">
+  <h2>Medicines</h2>
+  <p>Live stock levels and prices at our pharmacy.</p>
+</div>
+<div class="card">
+  <form class="searchbar">
+    <input name="q" value="{{ q }}" placeholder="Search by name" aria-label="Search medicines">
+    <button>Search</button>
+  </form>
+  {% if q %}<p class="results-for">Results for: {{ q }}</p>{% endif %}
+  {% if rows %}
+  <table class="table">
+    <thead><tr><th>Medicine</th><th>Availability</th><th class="num">Price</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><b>{{ r.name }}</b></td>
+        <td><span class="badge{% if r.stock < 30 %} low{% endif %}">{{ r.stock }} in stock</span></td>
+        <td class="num">UGX {{ "{:,}".format(r.price) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">No medicines match your search.</p>
+  {% endif %}
+</div>
 {% endblock %}

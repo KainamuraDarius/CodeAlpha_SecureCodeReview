@@ -1,2 +1,11 @@
 {% extends "base.html" %}
-{% block content %}<h2>Ping {{ host }}</h2><pre>{{ result }}</pre>{% endblock %}
+{% block title %}Ping{% endblock %}
+{% block content %}
+<div class="pagehead">
+  <h2>Network check</h2>
+  <p>Result of pinging <b>{{ host }}</b></p>
+</div>
+<div class="card">
+  <pre class="terminal">{{ result }}</pre>
+</div>
+{% endblock %}

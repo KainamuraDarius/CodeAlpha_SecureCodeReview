@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Prescription #{{ p.id }}</h2>
+<p>{{ p.drug }}: {{ p.dosage }}</p>
+<p>Patient notes: {{ p.notes }}</p>
+{% endblock %}

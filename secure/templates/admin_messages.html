@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Inbox</h2>
+{% for m in rows %}<div><b>{{ m.username }}</b>: {{ m.body }}</div>{% endfor %}
+{% endblock %}

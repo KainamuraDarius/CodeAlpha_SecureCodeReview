@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Medicines</h2>
+<form><input name="q" value="{{ q }}"><button>Search</button></form>
+<p>Results for: {{ q }}</p>
+<ul>
+{% for r in rows %}<li>{{ r.name }} | stock {{ r.stock }} | UGX {{ r.price }}</li>{% endfor %}
+</ul>
+{% endblock %}

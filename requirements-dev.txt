@@ -1,0 +1,8 @@
+# Runs both apps' tests and the scanners. Each app's own pins are in
+# vulnerable/requirements.txt (deliberately outdated) and secure/requirements.txt.
+-r secure/requirements.txt
+pytest>=8
+ruff>=0.5
+bandit>=1.8
+semgrep>=1.100
+pip-audit>=2.7

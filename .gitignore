@@ -1,0 +1,20 @@
+# Python / virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+
+# Runtime databases (created on first run)
+*.db
+
+# Secrets, logs, editor and OS files
+.env
+*.log
+.vscode/
+.idea/
+.DS_Store
